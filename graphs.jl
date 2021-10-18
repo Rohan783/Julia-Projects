@@ -1,4 +1,14 @@
-pol_t =pol ; T = sol.t
+using PyCall
+using PyPlot
+np= pyimport("numpy")
+
+sol= np.load("august_Radau2.npy")
+T= np.load("august_Radau2_T.npy")
+plt = pyimport("matplotlib.pyplot")
+pol_t =sol
+
+sqrt3= sqrt(3)
+lenx = size(pol_t[1,:,1])[1]
 Nu_e= 0.5*(pol_t[1,:,:] .+ pol_t[5,:,:] .+ (pol_t[10,:,:]/sqrt3))
 aNu_e= 0.5*(pol_t[2,:,:] .+ pol_t[13,:,:] .+ (pol_t[18,:,:]/sqrt3))
 Nu_mu= 0.5*(pol_t[1,:,:] .- pol_t[5,:,:] .+ (pol_t[10,:,:]/sqrt3))
@@ -18,16 +28,16 @@ pot_allv= zeros(16,lenx)
 # Nu_mu=zeros(lenx,size(sol.t)[1])
 # aNu_e=zeros(lenx,size(sol.t)[1])
 # aNu_mu=zeros(lenx,size(sol.t)[1])
-for (index,j) in enumerate(T)
-    # Nu_e[:,index],Nu_mu[:,index],aNu_e[:,index],aNu_mu[:,index] = equation(dpol_dt[:,:,index],sol[:,:,index],pot_allv,j)
-    # dpol_dt[:,:,index] = equation(dpol_dt[:,:,index],pol_t[:,:,index],pot_allv,j)
-    v[:,:,index] = repeat(vacuum_potential(x,j/(10^6)),2)
-    # Nu_mu_norm, aNu_mu_norm = take_norm.([Nu_mu[:,index],aNu_mu[:,index]])
-    f_veL[:,index],f_ve_L[:,index] = forward_v4e(j/(10^6),Nu_e[:,index],aNu_e[:,index],0)
-    f_vmuL[:,index],f_vmu_L[:,index] =forward_v(j/(10^6),Nu_mu[:,index],aNu_mu[:,index],0)
-    v[3,:,index] .+= (f_veL[:,index] .- f_vmuL[:,index])/2
-    v[8,:,index] .+= (f_veL[:,index] .+ f_vmuL[:,index])/twoxsqrt3
-end
+# for (index,j) in enumerate(T)
+#     # Nu_e[:,index],Nu_mu[:,index],aNu_e[:,index],aNu_mu[:,index] = equation(dpol_dt[:,:,index],sol[:,:,index],pot_allv,j)
+#     # dpol_dt[:,:,index] = equation(dpol_dt[:,:,index],pol_t[:,:,index],pot_allv,j)
+#     v[:,:,index] = repeat(vacuum_potential(x,j/(10^6)),2)
+#     # Nu_mu_norm, aNu_mu_norm = take_norm.([Nu_mu[:,index],aNu_mu[:,index]])
+#     f_veL[:,index],f_ve_L[:,index] = forward_v4e(j/(10^6),Nu_e[:,index],aNu_e[:,index],0)
+#     f_vmuL[:,index],f_vmu_L[:,index] =forward_v(j/(10^6),Nu_mu[:,index],aNu_mu[:,index],0)
+#     v[3,:,index] .+= (f_veL[:,index] .- f_vmuL[:,index])/2
+#     v[8,:,index] .+= (f_veL[:,index] .+ f_vmuL[:,index])/twoxsqrt3
+# end
 
 # for (index,j) in enumerate(sol.t)
 #     # plt.plot(x,Nu_mu[:,index])
@@ -41,10 +51,12 @@ end
 # plt.close()
 
 for i=1:lenx
-    # plt.plot(T,Nu_e[i,:])
-    # plt.plot(T,aNu_e[i,:])
-    # plt.plot(T,Nu_mu[i,:])
-    # plt.plot(T,aNu_mu[i,:])
+    plt.plot(T,Nu_e[i,:],label="Nu_e")
+    plt.plot(T,aNu_e[i,:],label="aNu_e")
+    plt.plot(T,Nu_mu[i,:],label="Nu_mu")
+    plt.plot(T,aNu_mu[i,:],label="aNu_mu")
+    plt.plot(T,Nu_s[i,:],label="Nu_s")
+    plt.plot(T,aNu_s[i,:],label="aNu_s")
     # plt.semilogy(T,abs.(f_veL[i,:]))
     # plt.semilogy(T,abs.(f_vmuL[i,:]))
     # plt.semilogy(sol.t,abs.(sol[8,i,:]))
@@ -56,16 +68,16 @@ for i=1:lenx
     # plt.semilogy(sol.t,abs.(dpol_dt[8,i,:]),label="8")
     # plt.semilogy(sol.t,abs.(dpol_dt[9,i,:]),label="9")
     # plt.semilogy(sol.t,abs.(dpol_dt[10,i,:]),label="10")
-    plt.semilogy(T,abs.(v[3,i,:] .+ v[8,i,:]*sqrt3))
-    plt.semilogy(T,abs.(-v[3,i,:] .+ v[8,i,:]*sqrt3))
+    # plt.semilogy(T,abs.(v[3,i,:] .+ v[8,i,:]*sqrt3))
+    # plt.semilogy(T,abs.(-v[3,i,:] .+ v[8,i,:]*sqrt3))
     # plt.plot(sol.t,0.5 .*(sol[2,i,:]- sol[13,i,:] + (sol[18,i,:] ./sqrt(3))))
     # plt.plot(sol.t,0.5 .*(sol[1,i,:] - 2 .*(sol[10,i,:] ./sqrt(3))))
     # plt.plot(sol.t,0.5 .*(sol[2,i,:] - 2 .*(sol[18,i,:] ./sqrt(3))))
 end
 plt.legend()
-plt.xlim(tspan[1],tspan[end])
-# plt.xlim(7e6,4.5e6)
-# plt.ylim(0,2)
+# plt.xlim(tspan[1],tspan[end])
+plt.xlim(20e6,1e6)
+# plt.ylim(1-0.03,1.01)
 display(gcf())
 plt.close()
 # typeof(sol.t)
@@ -155,3 +167,14 @@ plt.close()
 #     dpol_dt = dpol_dt ./(-Hubble(T)*(T*10^6))
 #     return dpol_dt
 # end
+for i=1:lenx
+    # plt.semilogy(sol.t,abs.(0.5*(pol[1,i,:] .+ pol[5,i,:] .+ (pol[10,i,:]/sqrt(3))) - 0.5*(pol[2,i,:] .+ pol[13,i,:] .+ (pol[18,i,:]/sqrt(3)))))
+    # plt.semilogy(sol.t,abs.(0.5*(pol[1,i,:] .- pol[5,i,:] .+ (pol[10,i,:]/sqrt(3))) - 0.5*(pol[2,i,:] .- pol[13,i,:] .+ (pol[18,i,:]/sqrt(3)))))
+    plt.semilogy(T,(pol_t[19,i,:])*1e-10)
+    plt.semilogy(T,(pol_t[20,i,:])*1e-10)
+end
+plt.yscale("symlog",linthreshy=1e-15)
+plt.xlim(T[1],T[end])
+display(gcf())
+plt.close()
+# println("size:",size(sol.t))
