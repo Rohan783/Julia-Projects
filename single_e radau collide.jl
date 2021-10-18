@@ -195,8 +195,6 @@ function equation!(dpol_dt,pol::Matrix{Z},v,T) where {Z <: Number}
 
     v[:,:] = vacuum_potential(T)
 
-    G2T5 = (GGG*(T^5))
-
     f_veL,f_ve_L = forward_v4e(T,Nu_e,aNu_e,L_e)
     f_vmuL,f_vmu_L = forward_v(T,Nu_mu,aNu_mu,L_mu)
 
@@ -215,18 +213,15 @@ function equation!(dpol_dt,pol::Matrix{Z},v,T) where {Z <: Number}
 
     GMcross(dpol_dt,2*v,pol) 
 
-    # R_e = G2T5.*C_e.*((fermi(x,chem_p_e) ./f0) .- Nu_e)
-    # R_mu = G2T5.*C_mu.*((fermi(x,chem_p_mu) ./f0) .- Nu_mu)
-    # aR_e = G2T5.*C_e.*((fermi(x,-chem_p_e) ./f0) .- aNu_e)
-    # aR_mu = G2T5.*C_mu.*((fermi(x,-chem_p_mu) ./f0) .- aNu_mu)  
-    R_e = G2T5.*C_e.*(1 .- Nu_e)
-    R_mu = G2T5.*C_mu.*(1 .- Nu_mu)
-    aR_e = G2T5.*C_e.*(1 .- aNu_e)
-    aR_mu = G2T5.*C_mu.*(1 .- aNu_mu) 
-
-    # println(dpol_dt[10,:],dpol_dt[18,:])
     dpol_dt[19,:] = ((dpol_dt[5,:]-dpol_dt[13,:]) + ((dpol_dt[10,:]-dpol_dt[18,:])*sqrt3))/(2*Lscale)
     dpol_dt[20,:] = ((dpol_dt[13,:]-dpol_dt[5,:]) + ((dpol_dt[10,:]-dpol_dt[18,:])*sqrt3))/(2*Lscale)
+
+    G2T5 = -(4.26984*10^-17) * T^5
+
+    R_e = 0.5*G2T5.*(13.24*(Nu_e .-1) + (aNu_e .-1))
+    R_mu = 0.5*G2T5.*(9.44*(Nu_mu .-1) + 0.56*(aNu_mu .-1))
+    aR_e = 0.5*G2T5.*(13.24*(aNu_e .-1) + (Nu_e .-1))
+    aR_mu = 0.5*G2T5.*(9.44*(aNu_mu .-1) + 0.56*(Nu_mu .-1))
 
     dpol_dt[1,:] = (2/3)*(R_e .+ R_mu)
     dpol_dt[5,:] = dpol_dt[5,:] .+ (R_e .- R_mu)
@@ -236,15 +231,15 @@ function equation!(dpol_dt,pol::Matrix{Z},v,T) where {Z <: Number}
     dpol_dt[13,:] = dpol_dt[13,:] .+ (aR_e .- aR_mu)
     dpol_dt[18,:] = dpol_dt[18,:] .+ (dpol_dt[2,:] *root3by2)
 
-    dpol_dt[6:7,:] = dpol_dt[6:7,:] .- (coeffs[1,:][:,[CartesianIndex()]] .*G2T5[[CartesianIndex()],:]) .* pol[6:7,:]
-    dpol_dt[8:9,:] = dpol_dt[8:9,:] .- (coeffs[2,:][:,[CartesianIndex()]] .*G2T5[[CartesianIndex()],:]) .* pol[8:9,:]
-    dpol_dt[3:4,:] = dpol_dt[3:4,:] .-(coeffs[3,:][:,[CartesianIndex()]] .*G2T5[[CartesianIndex()],:]) .* pol[3:4,:]
-    dpol_dt[14:15,:] = dpol_dt[14:15,:] .- (coeffs[4,:][:,[CartesianIndex()]] .*G2T5[[CartesianIndex()],:]) .* pol[14:15,:]
-    dpol_dt[16:17,:] = dpol_dt[16:17,:] .- (coeffs[5,:][:,[CartesianIndex()]] .*G2T5[[CartesianIndex()],:]) .* pol[16:17,:]
-    dpol_dt[11:12,:] = dpol_dt[11:12,:] .- (coeffs[6,:][:,[CartesianIndex()]] .*G2T5[[CartesianIndex()],:]) .* pol[11:12,:]
+    dpol_dt[3:4,:] += 0.5*G2T5.*(11.28*pol[3:4,:] + 0.75*pol[11:12,:])
+    dpol_dt[6:7,:] += 0.5*G2T5.*(3.56*pol[6:7,:])
+    dpol_dt[8:9,:] += 0.5*G2T5.*(2.5*pol[8:9,:])
 
-    dpol_dt[3:4,:] = dpol_dt[3:4,:] .- (C_dash[1,:][:,[CartesianIndex()]] .*G2T5[[CartesianIndex()],:]) .* pol[11:12,:]
-    dpol_dt[11:12,:] = dpol_dt[11:12,:] .- (C_dash[2,:][:,[CartesianIndex()]] .*G2T5[[CartesianIndex()],:]) .* pol[3:4,:]
+    dpol_dt[11:12,:] += 0.5*G2T5.*(11.28*pol[11:12,:] + 0.75*pol[3:4,:])
+    dpol_dt[14:15,:] += 0.5*G2T5.*(3.56*pol[14:15,:])
+    dpol_dt[16:17,:] += 0.5*G2T5.*(2.5*pol[16:17,:])
+
+    # println(dpol_dt[10,:],dpol_dt[18,:])
 
     dpol_dt[:,:] = dpol_dt/(-T*Hubble(T)*(10^6))
 end
