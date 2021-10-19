@@ -24,7 +24,7 @@ delmass = np.array([0.1,1,2,4])
 theta_all = np.array(asin.(sqrt.([3*10^-3,3*10^-2]))/2)
 
 theta12 = deg2rad(33.45)
-name="October_Radau"
+name="October20_TRBDF"
 delta_sqm12 =  7.6*(10^(-5))
 delta_sqm23 = delmass[1]
 theta13 = theta_all[1]#deg2rad(0.642)
@@ -179,19 +179,19 @@ function equation!(dpol_dt,pol::Matrix{Z},v,T) where {Z <: Number}
     # cross1 = Vector{Z}(1,lenx)
     # pol = reshape(pol_in,20,lenx)
 
-    Nu_e= min.(0.5*(pol[1,:] .+ pol[5,:] .+ (pol[10,:]/sqrt3)),1)
-    Nu_mu= min.(0.5*(pol[1,:] .- pol[5,:] .+ (pol[10,:]/sqrt3)),1)
+    Nu_e= 0.5*(pol[1,:] .+ pol[5,:] .+ (pol[10,:]/sqrt3))
+    Nu_mu= 0.5*(pol[1,:] .- pol[5,:] .+ (pol[10,:]/sqrt3))
 
-    aNu_e= min.(0.5*(pol[2,:] .+ pol[13,:] .+ (pol[18,:]/sqrt3)),1)
-    aNu_mu= min.(0.5*(pol[2,:] .- pol[13,:] .+ (pol[18,:]/sqrt3)),1)
+    aNu_e= 0.5*(pol[2,:] .+ pol[13,:] .+ (pol[18,:]/sqrt3))
+    aNu_mu= 0.5*(pol[2,:] .- pol[13,:] .+ (pol[18,:]/sqrt3))
 
     #Nu_e_norm, aNu_e_norm, Nu_mu_norm, aNu_mu_norm = ([Nu_e .* f0x2,aNu_e  .* f0x2,Nu_mu  .* f0x2,aNu_mu  .* f0x2])
-    # L_e = (Nu_e - aNu_e)
-    # L_mu = (Nu_mu - aNu_mu)
-    L_e = (pol[19,:]).*Lscale
-    L_mu = (pol[20,:]).*Lscale
-    chem_p_e = -3.628*pi*sinh.(asinh.(-1.2087*(L_e))/3)
-    chem_p_mu= -3.628*pi*sinh.(asinh.(-1.2087*(L_mu))/3)
+    L_e = (Nu_e - aNu_e)
+    L_mu = (Nu_mu - aNu_mu)
+    # L_e = (pol[19,:]).*Lscale
+    # L_mu = (pol[20,:]).*Lscale
+    # chem_p_e = -3.628*pi*sinh.(asinh.(-1.2087*(L_e))/3)
+    # chem_p_mu= -3.628*pi*sinh.(asinh.(-1.2087*(L_mu))/3)
 
     v[:,:] = vacuum_potential(T)
 
@@ -213,15 +213,15 @@ function equation!(dpol_dt,pol::Matrix{Z},v,T) where {Z <: Number}
 
     GMcross(dpol_dt,2*v,pol) 
 
-    dpol_dt[19,:] = ((dpol_dt[5,:]-dpol_dt[13,:]) + ((dpol_dt[10,:]-dpol_dt[18,:])*sqrt3))/(2*Lscale)
-    dpol_dt[20,:] = ((dpol_dt[13,:]-dpol_dt[5,:]) + ((dpol_dt[10,:]-dpol_dt[18,:])*sqrt3))/(2*Lscale)
+    # dpol_dt[19,:] = ((dpol_dt[5,:]-dpol_dt[13,:]) + ((dpol_dt[10,:]-dpol_dt[18,:])*sqrt3))/(2*Lscale)
+    # dpol_dt[20,:] = ((dpol_dt[13,:]-dpol_dt[5,:]) + ((dpol_dt[10,:]-dpol_dt[18,:])*sqrt3))/(2*Lscale)
 
     G2T5 = -(4.26984*10^-17) * T^5
 
-    R_e = 0.5*G2T5.*(13.24*(Nu_e .-1) + (aNu_e .-1))
-    R_mu = 0.5*G2T5.*(9.44*(Nu_mu .-1) + 0.56*(aNu_mu .-1))
-    aR_e = 0.5*G2T5.*(13.24*(aNu_e .-1) + (Nu_e .-1))
-    aR_mu = 0.5*G2T5.*(9.44*(aNu_mu .-1) + 0.56*(Nu_mu .-1))
+    R_e = 0.5*G2T5.*((Nu_e .-1) + (aNu_e .-1))
+    R_mu = 0.5*G2T5.*(0.56*(Nu_mu .-1) + 0.56*(aNu_mu .-1))
+    aR_e = 0.5*G2T5.*((aNu_e .-1) + (Nu_e .-1))
+    aR_mu = 0.5*G2T5.*(0.56*(aNu_mu .-1) + 0.56*(Nu_mu .-1))
 
     dpol_dt[1,:] = (2/3)*(R_e .+ R_mu)
     dpol_dt[5,:] = dpol_dt[5,:] .+ (R_e .- R_mu)
@@ -231,13 +231,13 @@ function equation!(dpol_dt,pol::Matrix{Z},v,T) where {Z <: Number}
     dpol_dt[13,:] = dpol_dt[13,:] .+ (aR_e .- aR_mu)
     dpol_dt[18,:] = dpol_dt[18,:] .+ (dpol_dt[2,:] *root3by2)
 
-    dpol_dt[3:4,:] += 0.5*G2T5.*(11.28*pol[3:4,:] + 0.75*pol[11:12,:])
-    dpol_dt[6:7,:] += 0.5*G2T5.*(3.56*pol[6:7,:])
-    dpol_dt[8:9,:] += 0.5*G2T5.*(2.5*pol[8:9,:])
+    dpol_dt[3:4,:] += 0.5*G2T5 .*(0.85*pol[3:4,:] .+ 0.75*pol[11:12,:])
+    dpol_dt[6:7,:] += 0.5*G2T5 .*(3.56*pol[6:7,:])
+    dpol_dt[8:9,:] += 0.5*G2T5 .*(2.5*pol[8:9,:])
 
-    dpol_dt[11:12,:] += 0.5*G2T5.*(11.28*pol[11:12,:] + 0.75*pol[3:4,:])
-    dpol_dt[14:15,:] += 0.5*G2T5.*(3.56*pol[14:15,:])
-    dpol_dt[16:17,:] += 0.5*G2T5.*(2.5*pol[16:17,:])
+    dpol_dt[11:12,:] += 0.5*G2T5 .*(0.85*pol[11:12,:] .+ 0.75*pol[3:4,:])
+    dpol_dt[14:15,:] += 0.5*G2T5 .*(3.56*pol[14:15,:])
+    dpol_dt[16:17,:] += 0.5*G2T5 .*(2.5*pol[16:17,:])
 
     # println(dpol_dt[10,:],dpol_dt[18,:])
 
@@ -252,14 +252,14 @@ pol_ini =  repeat([4/3,2*(2-(Asym_mu+Asym_e))/3,0,0,0,0,0,0,0,(2/sqrt(3)),0,0,As
 # pol_ini =  repeat([4/3,4/3,0,0,0,0,0,0,0,(2/sqrt(3)),0,0,0,0,0,0,0,(2/sqrt(3)),Asym_e/Lscale,Asym_mu/Lscale],1,lenx)
 # pol_ini =  repeat([0,0,0,0,0,0,0,0,0,0,0,0,Asym_mu-Asym_e,0,0,0,0,0,Asym_e/Lscale,Asym_mu/Lscale],1,lenx)
 # pol_ini = convert(Matrix{Float16},pol_ini)
-tspan = (20e6,1e6)
+tspan = (30e6,1e6)
 
 prob = ODEProblem(equation!,pol_ini,tspan,v)
 # using Sundials
 # sol = solve(prob,CVODE_BDF(),adaptive=false,dtmax=1e4)
 # using ODEInterfaceDiffEq
 # sol = solve(prob,dopri5(),adaptive=false,maxiters=1e6,dtmax=1e4)
-@time sol = solve(prob, RadauIIA5(), maxiters=1e7,abstol=1e-7)#,reltol=1e-7)
+@time sol = solve(prob, TRBDF2(), maxiters=1e7,abstol=1e-7)#,reltol=1e-7)
 # sol = solve(prob, IRKGL16(),saveat=np.linspace(20e6,1e6,1000),dtmax=1e3,dt=100.0,maxiters=1e6,abstol=1e-12,reltol=1e-12)
 
 #TRBDF2
@@ -292,6 +292,7 @@ plt.close()
 for i=1:lenx
     # plt.semilogy(sol.t,abs.(0.5*(pol[1,i,:] .+ pol[5,i,:] .+ (pol[10,i,:]/sqrt(3))) - 0.5*(pol[2,i,:] .+ pol[13,i,:] .+ (pol[18,i,:]/sqrt(3)))))
     # plt.semilogy(sol.t,abs.(0.5*(pol[1,i,:] .- pol[5,i,:] .+ (pol[10,i,:]/sqrt(3))) - 0.5*(pol[2,i,:] .- pol[13,i,:] .+ (pol[18,i,:]/sqrt(3)))))
+    plt.semilogy(sol.t,abs.(sol[19,i,:])*1e-10)
     plt.semilogy(sol.t,abs.(sol[20,i,:])*1e-10)
 end
 plt.xlim(tspan[1],tspan[end])
