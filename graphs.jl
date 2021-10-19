@@ -2,8 +2,8 @@ using PyCall
 using PyPlot
 np= pyimport("numpy")
 
-sol= np.load("august_Radau2.npy")
-T= np.load("august_Radau2_T.npy")
+sol= np.load("October_Radau1.npy")
+T= np.load("October_Radau1_T.npy")
 plt = pyimport("matplotlib.pyplot")
 pol_t =sol
 
@@ -170,11 +170,11 @@ plt.close()
 for i=1:lenx
     # plt.semilogy(sol.t,abs.(0.5*(pol[1,i,:] .+ pol[5,i,:] .+ (pol[10,i,:]/sqrt(3))) - 0.5*(pol[2,i,:] .+ pol[13,i,:] .+ (pol[18,i,:]/sqrt(3)))))
     # plt.semilogy(sol.t,abs.(0.5*(pol[1,i,:] .- pol[5,i,:] .+ (pol[10,i,:]/sqrt(3))) - 0.5*(pol[2,i,:] .- pol[13,i,:] .+ (pol[18,i,:]/sqrt(3)))))
-    plt.semilogy(T,(pol_t[19,i,:])*1e-10)
-    plt.semilogy(T,(pol_t[20,i,:])*1e-10)
+    plt.semilogy(sol.t,(sol[19,i,:])*1e-10)
+    plt.semilogy(sol.t,(sol[20,i,:])*1e-10)
 end
 plt.yscale("symlog",linthreshy=1e-15)
-plt.xlim(T[1],T[end])
+plt.xlim(sol.t[1],1e6)
 display(gcf())
 plt.close()
 # println("size:",size(sol.t))
