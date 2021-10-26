@@ -24,7 +24,7 @@ delmass = np.array([0.1,1,2,4])
 theta_all = np.array(asin.(sqrt.([3*10^-3,3*10^-2]))/2)
 
 theta12 = deg2rad(33.45)
-name="October20_TRBDF"
+name="October25_TRBDF"
 delta_sqm12 =  7.6*(10^(-5))
 delta_sqm23 = delmass[1]
 theta13 = theta_all[1]#deg2rad(0.642)
@@ -106,7 +106,7 @@ V[9]=sp.collect(-np.sqrt(3)*(Hf[3,3]-V[1])/2,(m1 ,m2 ,m3))
 
 function forward_v(T,Nu,aNu,L)
     a = (-1.5207*(10^-15)*(T^5)*x.*(Nu.+aNu))
-    b= (3.996*(10^-6)*(T^3)*L)
+    b = (3.996*(10^-6)*(T^3)*L)
     return [a .+ b,a .- b]
 end
 
@@ -159,7 +159,7 @@ end
 
 # norm = 8*zeta(3)#np.trapz(fermi(x)*(x**3), x)
 lenx=length(x)
-GGG= (4.26984*10^-17) .*x
+GGG= Gf^2 .*x
 coeffs= repeat([0.5*4,0.5*2.9,1.97,0.5*4,0.5*2.9,1.97],1,2)
 C_dash = repeat([1.23,1.23],1,2)
 C_tau =0.92 ; C_mu = 0.92; C_e = 1.27; G_e = -0.3096 ; G_nu_tau = 0.51
@@ -172,6 +172,7 @@ root3by2 = sqrt(3)/2
 zeta3= zeta(3)
 
 Lscale = 1e-10
+L_0 = 10e-10
 
 function equation!(dpol_dt,pol::Matrix{Z},v,T) where {Z <: Number}
     T= (T/10^6)
@@ -186,10 +187,12 @@ function equation!(dpol_dt,pol::Matrix{Z},v,T) where {Z <: Number}
     aNu_mu= 0.5*(pol[2,:] .- pol[13,:] .+ (pol[18,:]/sqrt3))
 
     #Nu_e_norm, aNu_e_norm, Nu_mu_norm, aNu_mu_norm = ([Nu_e .* f0x2,aNu_e  .* f0x2,Nu_mu  .* f0x2,aNu_mu  .* f0x2])
-    L_e = (Nu_e - aNu_e)
-    L_mu = (Nu_mu - aNu_mu)
-    # L_e = (pol[19,:]).*Lscale
-    # L_mu = (pol[20,:]).*Lscale
+    # L_e = 1e-10 .+ 2*(Nu_e - aNu_e) .+ (Nu_mu - aNu_mu)
+    # L_mu = 1e-10 .+ 2*(Nu_mu - aNu_mu) .+ (Nu_e - aNu_e)
+    # L_e = pol[19,:] .* Lscale
+    # L_mu = pol[20,:] .* Lscale
+    L_e =  L_0 .+ (3/8)*(2*pol[19,:] .+ pol[20,:]).*Lscale
+    L_mu = L_0 .+ (3/8)*(2*pol[20,:] .+ pol[19,:]).*Lscale
     # chem_p_e = -3.628*pi*sinh.(asinh.(-1.2087*(L_e))/3)
     # chem_p_mu= -3.628*pi*sinh.(asinh.(-1.2087*(L_mu))/3)
 
@@ -213,10 +216,10 @@ function equation!(dpol_dt,pol::Matrix{Z},v,T) where {Z <: Number}
 
     GMcross(dpol_dt,2*v,pol) 
 
-    # dpol_dt[19,:] = ((dpol_dt[5,:]-dpol_dt[13,:]) + ((dpol_dt[10,:]-dpol_dt[18,:])*sqrt3))/(2*Lscale)
-    # dpol_dt[20,:] = ((dpol_dt[13,:]-dpol_dt[5,:]) + ((dpol_dt[10,:]-dpol_dt[18,:])*sqrt3))/(2*Lscale)
+    dpol_dt[19,:] = ((dpol_dt[5,:]-dpol_dt[13,:]) + ((dpol_dt[10,:]-dpol_dt[18,:])*sqrt3))/(2*Lscale)
+    dpol_dt[20,:] = ((dpol_dt[13,:]-dpol_dt[5,:]) + ((dpol_dt[10,:]-dpol_dt[18,:])*sqrt3))/(2*Lscale)
 
-    G2T5 = -(4.26984*10^-17) * T^5
+    G2T5 = - (GGG/3.15) * T^5
 
     R_e = 0.5*G2T5.*((Nu_e .-1) + (aNu_e .-1))
     R_mu = 0.5*G2T5.*(0.56*(Nu_mu .-1) + 0.56*(aNu_mu .-1))
@@ -252,14 +255,14 @@ pol_ini =  repeat([4/3,2*(2-(Asym_mu+Asym_e))/3,0,0,0,0,0,0,0,(2/sqrt(3)),0,0,As
 # pol_ini =  repeat([4/3,4/3,0,0,0,0,0,0,0,(2/sqrt(3)),0,0,0,0,0,0,0,(2/sqrt(3)),Asym_e/Lscale,Asym_mu/Lscale],1,lenx)
 # pol_ini =  repeat([0,0,0,0,0,0,0,0,0,0,0,0,Asym_mu-Asym_e,0,0,0,0,0,Asym_e/Lscale,Asym_mu/Lscale],1,lenx)
 # pol_ini = convert(Matrix{Float16},pol_ini)
-tspan = (30e6,1e6)
+tspan = (60e6,1e6)
 
 prob = ODEProblem(equation!,pol_ini,tspan,v)
 # using Sundials
 # sol = solve(prob,CVODE_BDF(),adaptive=false,dtmax=1e4)
 # using ODEInterfaceDiffEq
 # sol = solve(prob,dopri5(),adaptive=false,maxiters=1e6,dtmax=1e4)
-@time sol = solve(prob, TRBDF2(), maxiters=1e7,abstol=1e-7)#,reltol=1e-7)
+@time sol = solve(prob, TRBDF2(),dtmax=1e3, maxiters=1e7 ,abstol=1e-7)#,reltol=1e-5)
 # sol = solve(prob, IRKGL16(),saveat=np.linspace(20e6,1e6,1000),dtmax=1e3,dt=100.0,maxiters=1e6,abstol=1e-12,reltol=1e-12)
 
 #TRBDF2
@@ -278,13 +281,13 @@ println("done")
 #plot(sol)
 for i=1:lenx
     # plt.plot(sol.t,0.5*(sol[:][1,i]+ sol[5,i,:] + (sol[10,i,:]/sqrt(3))))
-    plt.plot(sol.t,0.5*(pol[1,i,:] .+ pol[5,i,:] .+ (pol[10,i,:]/sqrt(3))))
-    plt.plot(sol.t,0.5*(pol[1,i,:] .- pol[5,i,:] .+ (pol[10,i,:]/sqrt(3))))
-    plt.plot(sol.t,0.5*(sol[2,i,:]+ sol[13,i,:] + (sol[18,i,:]/sqrt(3))))
+    # plt.plot(sol.t,0.5*(sol[1,i,:] .+ sol[5,i,:] .+ (sol[10,i,:]/sqrt(3))))
+    # plt.plot(sol.t,0.5*(sol[1,i,:] .- sol[5,i,:] .+ (sol[10,i,:]/sqrt(3))))
+    # plt.plot(sol.t,0.5*(sol[2,i,:] .+ sol[13,i,:] .+ (sol[18,i,:]/sqrt(3))))
     # plt.plot(sol.t,0.5*(sol[1,i,:]- sol[5,i,:] + (sol[10,i,:]/sqrt(3))))
-    plt.plot(sol.t,0.5*(sol[2,i,:]- sol[13,i,:] + (sol[18,i,:]/sqrt(3))))
-    plt.plot(sol.t,0.5*(pol[1,i,:]- (2*pol[10,i,:]/sqrt(3))))
-    plt.plot(sol.t,0.5*(pol[2,i,:]- (2*pol[18,i,:]/sqrt(3))))
+    # plt.plot(sol.t,0.5*(sol[2,i,:] .- sol[13,i,:] .+ (sol[18,i,:]/sqrt(3))))
+    plt.plot(sol.t,0.5*(sol[1,i,:]- (2*sol[10,i,:]/sqrt(3))))
+    plt.plot(sol.t,0.5*(sol[2,i,:]- (2*sol[18,i,:]/sqrt(3))))
 end
 plt.xlim(tspan[1],tspan[end])
 display(gcf())
@@ -301,3 +304,37 @@ plt.close()
 println("size:",size(sol.t))
 #plt.plot(sol.t,0.5*(sol[1,:]+ sol[5,:] + (sol[10,:]/sqrt(3))))
 
+pol = np.swapaxes(pol,0,1)
+u_e= 0.5*( pol[1,0+1,:]+ pol[1,4+1,:] + (pol[1,9+1,:]/(np.sqrt(3))))
+u_mu= 0.5*( pol[1,0+1,:] - pol[1,4+1,:] + (pol[1,9+1,:]/(np.sqrt(3))))
+u_s= 0.5*( pol[1,0+1,:] - 2*(pol[1,9+1,:]/(np.sqrt(3))))
+au_e= 0.5*( pol[1,1+1,:]+ pol[1,12+1,:] + (pol[1,17+1,:]/(np.sqrt(3))))
+au_mu= 0.5*( pol[1,1+1,:] - pol[1,12+1,:] + (pol[1,17+1,:]/(np.sqrt(3))))
+au_s= 0.5*( pol[1,1+1,:] - 2*(pol[1,17+1,:]/(np.sqrt(3))))
+n_eff_m = (1.5 * sol[1,1,:]) .- 2
+n_eff_a = (1.5 * sol[2,1,:]) .- 2
+
+fig1,ax1 =plt.subplots(figsize=(10,7))
+ax1.semilogy(sol.t/10^6,abs.(pol[1,18+1,:]*1e-10), label="L_e")
+ax1.semilogy(sol.t/10^6,abs.(pol[1,19+1,:]*1e-10), label="L_mu")
+#ax1.set_title('3 Flavors with delta_CP = 0',fontsize=20,bbox=dict(facecolor='white', alpha=1))
+ax1.set_ylabel("Lepton Asymmetries",fontsize=20)
+ax1.set_xlabel("Temperature MeV", fontsize=20)
+ax1.tick_params(axis="x", labelsize=0)
+ax1.tick_params(axis="y", labelsize=20)
+# ax1.set_yscale('symlog',linthresh=1e-29)
+# ax1.set_ylim(1e-29,1e-1)
+ax1.set_xlim(sol.t[1]/10^6,sol.t[end]/10^6)
+# ax1.set_xlim(30,29)
+
+ax1.legend(shadow=true,fontsize=20)
+#fig1.savefig("2.png")
+ax12 = fig1.add_axes((0.125,-0.175,0.775,0.3),sharex=ax1)
+ax12.plot(sol.t/10^6,(n_eff_m+n_eff_a)/2,label="N_eff_m")
+ax12.tick_params(axis="x",labelsize=15)
+ax12.tick_params(axis="y",labelsize=15)
+ax12.set_xlabel("Temperature (MeV)", fontsize=20)
+ax12.set_ylabel("N_{eff}", fontsize=20)
+plt.plot(1.5 *sol[2,1,:]) 
+display(gcf())
+plt.close()
