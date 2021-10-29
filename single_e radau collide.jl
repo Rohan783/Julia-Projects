@@ -34,7 +34,7 @@ del_cp = 0#np.radians(234)
 Gf= 1.16*(10^(-23))
 
 # name = name*"_"*string(1+np.where(delmass.==delta_sqm23)[1][1])*string(1+np.where(theta_all.==theta13)[1][1])*string(1+np.where(theta_all.==theta23)[1][1])*"_r15c"
-M2_z= 91^2 #MeV #check code for powers of 10
+M2_z= 91^2 #GeV #check code for powers of 10
 G= 6.707*(10^-57)
 cos2th_w= 0.7777
 sec2th_w= 1/cos2th_w
@@ -172,7 +172,7 @@ root3by2 = sqrt(3)/2
 zeta3= zeta(3)
 
 Lscale = 1e-10
-L_0 = 10e-10
+L_0 = 1e-10
 
 function equation!(dpol_dt,pol::Matrix{Z},v,T) where {Z <: Number}
     T= (T/10^6)
@@ -304,19 +304,19 @@ plt.close()
 println("size:",size(sol.t))
 #plt.plot(sol.t,0.5*(sol[1,:]+ sol[5,:] + (sol[10,:]/sqrt(3))))
 
-pol = np.swapaxes(pol,0,1)
-u_e= 0.5*( pol[1,0+1,:]+ pol[1,4+1,:] + (pol[1,9+1,:]/(np.sqrt(3))))
-u_mu= 0.5*( pol[1,0+1,:] - pol[1,4+1,:] + (pol[1,9+1,:]/(np.sqrt(3))))
-u_s= 0.5*( pol[1,0+1,:] - 2*(pol[1,9+1,:]/(np.sqrt(3))))
-au_e= 0.5*( pol[1,1+1,:]+ pol[1,12+1,:] + (pol[1,17+1,:]/(np.sqrt(3))))
-au_mu= 0.5*( pol[1,1+1,:] - pol[1,12+1,:] + (pol[1,17+1,:]/(np.sqrt(3))))
-au_s= 0.5*( pol[1,1+1,:] - 2*(pol[1,17+1,:]/(np.sqrt(3))))
+#pol = np.swapaxes(pol,0,1)
+# u_e= 0.5*( sol[1,1,:] .+ sol[5,1,:] .+ (sol[10,1,:]/(np.sqrt(3))))
+# u_mu= 0.5*( sol[1,1,:] .- sol[5,1,:] .+ (sol[10,1,:]/(np.sqrt(3))))
+# u_s= 0.5*( sol[1,1,:] .- 2*(sol[10,1,:]/(np.sqrt(3))))
+# au_e= 0.5*( sol[2,1,:] .+ sol[13,1,:] .+ (sol[18,1,:]/(np.sqrt(3))))
+# au_mu= 0.5*( sol[2,1,:] .- sol[13,1,:] .+ (sol[18,1,:]/(np.sqrt(3))))
+# au_s= 0.5*( sol[2,1,:] .- 2*(sol[18,1,:]/(np.sqrt(3))))
 n_eff_m = (1.5 * sol[1,1,:]) .- 2
 n_eff_a = (1.5 * sol[2,1,:]) .- 2
 
 fig1,ax1 =plt.subplots(figsize=(10,7))
-ax1.semilogy(sol.t/10^6,abs.(pol[1,18+1,:]*1e-10), label="L_e")
-ax1.semilogy(sol.t/10^6,abs.(pol[1,19+1,:]*1e-10), label="L_mu")
+ax1.semilogy(sol.t/10^6,abs.(sol[19,1,:]*1e-10), label="L_e")
+ax1.semilogy(sol.t/10^6,abs.(sol[20,1,:]*1e-10), label="L_mu")
 #ax1.set_title('3 Flavors with delta_CP = 0',fontsize=20,bbox=dict(facecolor='white', alpha=1))
 ax1.set_ylabel("Lepton Asymmetries",fontsize=20)
 ax1.set_xlabel("Temperature MeV", fontsize=20)
@@ -335,6 +335,6 @@ ax12.tick_params(axis="x",labelsize=15)
 ax12.tick_params(axis="y",labelsize=15)
 ax12.set_xlabel("Temperature (MeV)", fontsize=20)
 ax12.set_ylabel("N_{eff}", fontsize=20)
-plt.plot(1.5 *sol[2,1,:]) 
+ax12.plot(sol.t/1e6,(1.5 *sol[2,1,:]) .- 2.0)
 display(gcf())
 plt.close()
