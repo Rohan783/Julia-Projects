@@ -2,8 +2,8 @@ using PyCall
 using PyPlot
 np= pyimport("numpy")
 
-sol= np.load("October20_TRBDF.npy")
-T= np.load("October20_TRBDF_T.npy")
+sol= np.load("October25_TRBDF_121.npy")
+T= np.load("October25_TRBDF_121_T.npy")
 plt = pyimport("matplotlib.pyplot")
 
 sqrt3= sqrt(3)
@@ -66,7 +66,7 @@ for i=1:lenx
     # plt.semilogy(T,abs.(-v[3,i,:] .+ v[8,i,:]*sqrt3))
 end
 plt.legend()
-plt.xlim(30e6,1e6)
+plt.xlim(60e6,1e6)
 display(gcf())
 plt.close()
 # typeof(sol.t)
@@ -163,7 +163,7 @@ for i=1:lenx
     plt.semilogy(T,abs.(sol[20,i,:])*1e-10)
 end
 # plt.yscale("symlog",linthreshy=1e-15)
-plt.xlim(T[1],1e6)
+plt.xlim(60e6,1e6)
 display(gcf())
 # plt.close()
 # println("size:",size(sol.t))
