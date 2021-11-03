@@ -24,16 +24,16 @@ delmass = np.array([0.1,1,2,4])
 theta_all = np.array(asin.(sqrt.([3*10^-3,3*10^-2]))/2)
 
 theta12 = deg2rad(33.45)
-name="October25_TRBDF"
+name="November3_TRBDF"
 delta_sqm12 =  7.6*(10^(-5))
-delta_sqm23 = delmass[1]
+delta_sqm23 = delmass[4]
 theta13 = theta_all[1]#deg2rad(0.642)
-theta23 = theta_all[1]#deg2rad(0.5)#theta_all[1] 
+theta23 = theta_all[2]#deg2rad(0.5)#theta_all[1] 
 del_cp = 0#np.radians(234)
 # x = np.linspace(0.1,20,30)
 Gf= 1.16*(10^(-23))
 
-# name = name*"_"*string(1+np.where(delmass.==delta_sqm23)[1][1])*string(1+np.where(theta_all.==theta13)[1][1])*string(1+np.where(theta_all.==theta23)[1][1])*"_r15c"
+name = name*"_"*string(1+np.where(delmass.==delta_sqm23)[1][1])*string(1+np.where(theta_all.==theta13)[1][1])*string(1+np.where(theta_all.==theta23)[1][1])#*"_r15c"
 M2_z= 91^2 #GeV #check code for powers of 10
 G= 6.707*(10^-57)
 cos2th_w= 0.7777
@@ -159,7 +159,7 @@ end
 
 # norm = 8*zeta(3)#np.trapz(fermi(x)*(x**3), x)
 lenx=length(x)
-GGG= Gf^2 .*x
+GGG= (4.26984*10^-17) .*x
 coeffs= repeat([0.5*4,0.5*2.9,1.97,0.5*4,0.5*2.9,1.97],1,2)
 C_dash = repeat([1.23,1.23],1,2)
 C_tau =0.92 ; C_mu = 0.92; C_e = 1.27; G_e = -0.3096 ; G_nu_tau = 0.51
@@ -215,7 +215,8 @@ function equation!(dpol_dt,pol::Matrix{Z},v,T) where {Z <: Number}
     v[16,:]= v[16,:] .+ (f_ve_L + f_vmu_L)/twoxsqrt3
 
     GMcross(dpol_dt,2*v,pol) 
-
+    # dpol_dt[19,:] .= 0
+    # dpol_dt[20,:] .= 0
     dpol_dt[19,:] = ((dpol_dt[5,:]-dpol_dt[13,:]) + ((dpol_dt[10,:]-dpol_dt[18,:])*sqrt3))/(2*Lscale)
     dpol_dt[20,:] = ((dpol_dt[13,:]-dpol_dt[5,:]) + ((dpol_dt[10,:]-dpol_dt[18,:])*sqrt3))/(2*Lscale)
 
@@ -251,6 +252,7 @@ end
 Asym_e = 10^-10
 Asym_mu = 10^-10
 
+# pol_ini =  repeat([2*(2-(Asym_mu+Asym_e))/3,4/3,0,0,0,0,0,0,0,((2-(Asym_mu+Asym_e))/sqrt(3)),0,0,Asym_mu-Asym_e,0,0,0,0,(2/sqrt(3)),Asym_e/Lscale,Asym_mu/Lscale],1,lenx)
 pol_ini =  repeat([4/3,2*(2-(Asym_mu+Asym_e))/3,0,0,0,0,0,0,0,(2/sqrt(3)),0,0,Asym_mu-Asym_e,0,0,0,0,((2-(Asym_mu+Asym_e))/sqrt(3)),Asym_e/Lscale,Asym_mu/Lscale],1,lenx)
 # pol_ini =  repeat([4/3,4/3,0,0,0,0,0,0,0,(2/sqrt(3)),0,0,0,0,0,0,0,(2/sqrt(3)),Asym_e/Lscale,Asym_mu/Lscale],1,lenx)
 # pol_ini =  repeat([0,0,0,0,0,0,0,0,0,0,0,0,Asym_mu-Asym_e,0,0,0,0,0,Asym_e/Lscale,Asym_mu/Lscale],1,lenx)
@@ -270,17 +272,17 @@ prob = ODEProblem(equation!,pol_ini,tspan,v)
 # using Sundials
 # prob = DAEProblem(equation,pol_ini,tspan,p)
 # sol = solve(prob,IDA())
-pol = zeros(Float64,20,lenx,size(sol.t)[1])
-for (i,_) in enumerate(sol.t)
-    pol[:,:,i] .= sol.u[i]
-end
+# pol = zeros(Float64,20,lenx,size(sol.t)[1])
+# for (i,_) in enumerate(sol.t)
+#     pol[:,:,i] .= sol.u[i]
+# end
 np.save(name*"_T",sol.t)
 np.save(name,sol);
 println("done")
 
 #plot(sol)
 for i=1:lenx
-    # plt.plot(sol.t,0.5*(sol[:][1,i]+ sol[5,i,:] + (sol[10,i,:]/sqrt(3))))
+    # plt.plot(sol.t,0.5*(sol[1,i,:]+ sol[5,i,:] + (sol[10,i,:]/sqrt(3))))
     # plt.plot(sol.t,0.5*(sol[1,i,:] .+ sol[5,i,:] .+ (sol[10,i,:]/sqrt(3))))
     # plt.plot(sol.t,0.5*(sol[1,i,:] .- sol[5,i,:] .+ (sol[10,i,:]/sqrt(3))))
     # plt.plot(sol.t,0.5*(sol[2,i,:] .+ sol[13,i,:] .+ (sol[18,i,:]/sqrt(3))))
@@ -305,12 +307,12 @@ println("size:",size(sol.t))
 #plt.plot(sol.t,0.5*(sol[1,:]+ sol[5,:] + (sol[10,:]/sqrt(3))))
 
 #pol = np.swapaxes(pol,0,1)
-# u_e= 0.5*( sol[1,1,:] .+ sol[5,1,:] .+ (sol[10,1,:]/(np.sqrt(3))))
-# u_mu= 0.5*( sol[1,1,:] .- sol[5,1,:] .+ (sol[10,1,:]/(np.sqrt(3))))
-# u_s= 0.5*( sol[1,1,:] .- 2*(sol[10,1,:]/(np.sqrt(3))))
-# au_e= 0.5*( sol[2,1,:] .+ sol[13,1,:] .+ (sol[18,1,:]/(np.sqrt(3))))
-# au_mu= 0.5*( sol[2,1,:] .- sol[13,1,:] .+ (sol[18,1,:]/(np.sqrt(3))))
-# au_s= 0.5*( sol[2,1,:] .- 2*(sol[18,1,:]/(np.sqrt(3))))
+u_e= 0.5*( sol[1,1,:] .+ sol[5,1,:] .+ (sol[10,1,:]/(np.sqrt(3))))
+u_mu= 0.5*( sol[1,1,:] .- sol[5,1,:] .+ (sol[10,1,:]/(np.sqrt(3))))
+u_s= 0.5*( sol[1,1,:] .- 2*(sol[10,1,:]/(np.sqrt(3))))
+au_e= 0.5*( sol[2,1,:] .+ sol[13,1,:] .+ (sol[18,1,:]/(np.sqrt(3))))
+au_mu= 0.5*( sol[2,1,:] .- sol[13,1,:] .+ (sol[18,1,:]/(np.sqrt(3))))
+au_s= 0.5*( sol[2,1,:] .- 2*(sol[18,1,:]/(np.sqrt(3))))
 n_eff_m = (1.5 * sol[1,1,:]) .- 2
 n_eff_a = (1.5 * sol[2,1,:]) .- 2
 
@@ -330,11 +332,12 @@ ax1.set_xlim(sol.t[1]/10^6,sol.t[end]/10^6)
 ax1.legend(shadow=true,fontsize=20)
 #fig1.savefig("2.png")
 ax12 = fig1.add_axes((0.125,-0.175,0.775,0.3),sharex=ax1)
-ax12.plot(sol.t/10^6,(n_eff_m+n_eff_a)/2,label="N_eff_m")
+ax12.plot(sol.t/10^6,(n_eff_m .+ n_eff_a)/2,label="N_eff")
 ax12.tick_params(axis="x",labelsize=15)
 ax12.tick_params(axis="y",labelsize=15)
 ax12.set_xlabel("Temperature (MeV)", fontsize=20)
-ax12.set_ylabel("N_{eff}", fontsize=20)
-ax12.plot(sol.t/1e6,(1.5 *sol[2,1,:]) .- 2.0)
+ax12.set_ylabel("N_eff", fontsize=20)
+# ax12.plot(sol.t/1e6,n_eff_a)
+# ax12.set_ylim(bottom=-0.1,top= np.max((n_eff_m .+ n_eff_a)/2))
 display(gcf())
 plt.close()
