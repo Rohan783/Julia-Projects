@@ -9,11 +9,11 @@ pot_allv= zeros(16,lenx)
 a = zeros(lenx,size(T)[1])
 b = zeros(lenx,size(T)[1])
 c = zeros(lenx,size(T)[1])
-for (index,j) in enumerate(T[2:end])
-    # Nu_e[:,index],Nu_mu[:,index],aNu_e[:,index],aNu_mu[:,index] = equation(dpol_dt[:,:,index],sol[:,:,index],pot_allv,j)
-    dpol_dt[:,:,index] = equation!(dpol_dt[:,:,index],pol_t[:,:,index],pot_allv,j)
-    # a[:,index+1],b[:,index+1],c[:,index+1] = equation(dpol_dt[:,:,index],pol_t[:,:,index],pot_allv,j)
-end
+# for (index,j) in enumerate(T[2:end])
+#     # Nu_e[:,index],Nu_mu[:,index],aNu_e[:,index],aNu_mu[:,index] = equation(dpol_dt[:,:,index],sol[:,:,index],pot_allv,j)
+#     dpol_dt[:,:,index] = equation!(dpol_dt[:,:,index],pol_t[:,:,index],pot_allv,j)
+#     # a[:,index+1],b[:,index+1],c[:,index+1] = equation(dpol_dt[:,:,index],pol_t[:,:,index],pot_allv,j)
+# end
 
 for i=1:lenx
     # plt.plot(sol.t,Nu_e[i,:])
