@@ -2,8 +2,8 @@ using PyCall
 using PyPlot
 np= pyimport("numpy")
 
-sol= np.load("October25_TRBDF_121.npy")
-T= np.load("October25_TRBDF_121_T.npy")
+sol= np.load("November17_TRBDF_111.npy")
+T= np.load("November17_TRBDF_111_T.npy")
 plt = pyimport("matplotlib.pyplot")
 
 sqrt3= sqrt(3)
@@ -22,21 +22,22 @@ f_ve_L = zeros(lenx,size(T)[1])
 f_vmu_L = zeros(lenx,size(T)[1])
 dpol_dt =zeros(20,lenx,size(T)[1])
 v= zeros(16,lenx,size(T)[1])
-pot_allv= zeros(16,lenx)
+pot_allv= zeros(16,lenx,size(T)[1])
 # Nu_e=zeros(lenx,size(sol.t)[1])
 # Nu_mu=zeros(lenx,size(sol.t)[1])
 # aNu_e=zeros(lenx,size(sol.t)[1])
 # aNu_mu=zeros(lenx,size(sol.t)[1])
-# for (index,j) in enumerate(T)
-#     # Nu_e[:,index],Nu_mu[:,index],aNu_e[:,index],aNu_mu[:,index] = equation(dpol_dt[:,:,index],sol[:,:,index],pot_allv,j)
-#     # dpol_dt[:,:,index] = equation(dpol_dt[:,:,index],pol_t[:,:,index],pot_allv,j)
-#     v[:,:,index] = repeat(vacuum_potential(x,j/(10^6)),2)
-#     # Nu_mu_norm, aNu_mu_norm = take_norm.([Nu_mu[:,index],aNu_mu[:,index]])
-#     f_veL[:,index],f_ve_L[:,index] = forward_v4e(j/(10^6),Nu_e[:,index],aNu_e[:,index],0)
-#     f_vmuL[:,index],f_vmu_L[:,index] =forward_v(j/(10^6),Nu_mu[:,index],aNu_mu[:,index],0)
-#     v[3,:,index] .+= (f_veL[:,index] .- f_vmuL[:,index])/2
-#     v[8,:,index] .+= (f_veL[:,index] .+ f_vmuL[:,index])/twoxsqrt3
-# end
+for (index,j) in enumerate(T)
+    # Nu_e[:,index],Nu_mu[:,index],aNu_e[:,index],aNu_mu[:,index] = equation(dpol_dt[:,:,index],sol[:,:,index],pot_allv,j)
+    # dpol_dt[:,:,index] = equation(dpol_dt[:,:,index],pol_t[:,:,index],pot_allv,j)
+    v[:,:,index] = vacuum_potential(j/(10^6))
+    pot_allv[:,:,index] = v[:,:,index]
+    # Nu_mu_norm, aNu_mu_norm = take_norm.([Nu_mu[:,index],aNu_mu[:,index]])
+    f_veL[:,index],f_ve_L[:,index] = forward_v4e(j/(10^6),Nu_e[:,index],aNu_e[:,index],sol[19,1,index]*1e-10)
+    f_vmuL[:,index],f_vmu_L[:,index] =forward_v(j/(10^6),Nu_mu[:,index],aNu_mu[:,index],sol[20,1,index]*1e-10)
+    pot_allv[3,:,index] .+= (f_veL[:,index] .- f_vmuL[:,index])/2
+    pot_allv[8,:,index] .+= (f_veL[:,index] .+ f_vmuL[:,index])/twoxsqrt3
+end
 
 # for (index,j) in enumerate(sol.t)
 #     # plt.plot(x,Nu_mu[:,index])
@@ -48,25 +49,46 @@ pot_allv= zeros(16,lenx)
 # plt.xlim(x[1],50)
 # display(gcf())
 # plt.close()
-
+fig2,ax2 =plt.subplots(figsize=(10,7))
 for i=1:lenx
-    plt.plot(T,(Nu_e .+ aNu_e .+ Nu_mu .+ aNu_mu .+ Nu_s .+ aNu_s)[i,:] .-4, label="N_eff_TRBDF" )
-    # plt.semilogy(T,abs.(Nu_e[i,:]-aNu_e[i,:]),label="Nu_e")
-    # # plt.plot(T,aNu_e[i,:],label="aNu_e")
-    # plt.semilogy(T,abs.(Nu_mu[i,:]-aNu_mu[i,:]),label="Nu_mu")
-    # # plt.plot(T,aNu_mu[i,:],label="aNu_mu")
-    # plt.semilogy(T,abs.(Nu_s[i,:] -aNu_s[i,:]),label="Nu_s")
-    # plt.plot(T,aNu_s[i,:],label="aNu_s")
-    # plt.semilogy(T,abs.(f_veL[i,:]))
-    # plt.semilogy(T,abs.(f_vmuL[i,:]))
-    # plt.semilogy(sol.t,abs.(sol[8,i,:]))
-    # plt.semilogy(sol.t,abs.(sol[9,i,:]))
-    # plt.semilogy(sol.t,abs.(sol[10,i,:]))
-    # plt.semilogy(T,abs.(v[3,i,:] .+ v[8,i,:]*sqrt3))
-    # plt.semilogy(T,abs.(-v[3,i,:] .+ v[8,i,:]*sqrt3))
+    # ax2.plot(T,(Nu_e .+ aNu_e .+ Nu_mu .+ aNu_mu .+ Nu_s .+ aNu_s)[i,:] .-4, label="N_eff_TRBDF" )
+    # ax2.semilogy(T,abs.(Nu_e[i,:]-aNu_e[i,:]),label="Nu_e")
+    # # ax2.plot(T,aNu_e[i,:],label="aNu_e")
+    # ax2.semilogy(T,abs.(Nu_mu[i,:]-aNu_mu[i,:]),label="Nu_mu")
+    # # ax2.plot(T,aNu_mu[i,:],label="aNu_mu")
+    # ax2.semilogy(T,abs.(Nu_s[i,:] -aNu_s[i,:]),label="Nu_s")
+    # ax2.plot(T,aNu_s[i,:],label="aNu_s")
+    # ax2.loglog(T,abs.(f_veL[i,:] .+ f_ve_L[i,:])/2,label = "V_med Nu_e")
+    # ax2.loglog(T,abs.(f_vmuL[i,:] .+ f_vmu_L[i,:])/2,label = "V_med N_mu")
+    ax2.loglog(T,abs.(f_veL[i,:] .- f_ve_L[i,:])/2,label = "V_L_e")
+    ax2.loglog(T,abs.(f_vmuL[i,:] .- f_vmu_L[i,:])/2,label = "V_L_mu")
+    ax2.loglog(T,abs.(v[3,i,:]), label="V_12")
+    ax2.loglog(T,abs.(v[3,i,:] .+ v[8,i,:]*sqrt3), label="Vac_e")
+    ax2.loglog(T,abs.(-v[3,i,:] .+ v[8,i,:]*sqrt3), label="Vac_mu")
+    ax2.loglog(T,abs.(1.49851*(10^-6)*((T/10^6).^3) .* (sol[3,1,:] .- sol[11,1,:])), label="real V_eµ")
+    ax2.loglog(T,abs.(1.49851*(10^-6)*((T/10^6).^3) .* (sol[4,1,:] .- sol[12,1,:])), label="imag V_eµ")
+    # ax2.semilogy(sol.t,abs.(sol[8,i,:]))
+    # ax2.semilogy(sol.t,abs.(sol[9,i,:]))
+    # ax2.semilogy(sol.t,abs.(sol[10,i,:]))
+    # ax2.loglog(T,abs.(pot_allv[3,i,:] .+ pot_allv[8,i,:]*sqrt3), label="Vac_e + Vmed")
+    # ax2.loglog(T,abs.(-pot_allv[3,i,:] .+ pot_allv[8,i,:]*sqrt3), label="Vac_mu + V_med")
 end
-plt.legend()
-plt.xlim(60e6,1e6)
+ax2.legend(fontsize=11)
+ax2.set_yscale("symlog",linthresh=1e-17)
+ax2.set_xlim(60e6,0.1e6)
+ax2.set_ylabel("Different potentials", fontsize=20)
+ax22 = fig2.add_axes((0.125,-0.175,0.775,0.3),sharex=ax2)
+ax22.semilogx(T,Nu_e[1,:],label="Nu_e")
+ax22.semilogx(T,Nu_mu[1,:],label="Nu_µ")
+ax22.semilogx(T,Nu_s[1,:],label="Nu_s")
+ax22.semilogx(T,aNu_e[1,:],label="aNu_e")
+ax22.semilogx(T,aNu_mu[1,:],label="aNu_mu")
+ax22.semilogx(T,aNu_s[1,:],label="aNu_s")
+ax22.tick_params(axis="x",labelsize=15)
+ax22.tick_params(axis="y",labelsize=15)
+ax22.set_xlabel("Temperature (MeV)", fontsize=20)
+ax22.set_ylabel("Nu population", fontsize=20)
+ax22.legend(fontsize=10)
 display(gcf())
 plt.close()
 # typeof(sol.t)
@@ -74,96 +96,14 @@ plt.close()
 # dpol_dt[:,:,50] = equation(dpol_dt[:,:,50],pol_t[:,:,50],pot_allv,sol.t[50])
 
 
-# function equation(pol::Matrix{Z},v,T) where {Z <: Number}
-#     T=T/10^6
-#     # pol = Vector{Z}(20,lenx) 
-#     # cross1 = Vector{Z}(1,lenx)
-#     #v=zeros(Real,18,lenx)
-#     # pol = reshape(pol_in,20,lenx)
-#     dpol_dt = zeros(20,lenx)
-
-#     Nu_e= 0.5*(pol[1,:] .+ pol[5,:] .+ (pol[10,:]/sqrt3))
-#     Nu_mu= 0.5*(pol[1,:] .- pol[5,:] .+ (pol[10,:]/sqrt3))
-
-#     aNu_e= 0.5*(pol[2,:] .+ pol[13,:] .+ (pol[18,:]/sqrt3))
-#     aNu_mu= 0.5*(pol[2,:] .- pol[13,:] .+ (pol[18,:]/sqrt3))
-
-#     Nu_e_norm, aNu_e_norm, Nu_mu_norm, aNu_mu_norm = take_norm.([Nu_e,aNu_e,Nu_mu,aNu_mu])
-
-#     L_e = (pol[19,1]).*Lscale .*0
-#     L_mu = (pol[20,1]).*Lscale .*0 
-#     chem_p_e = -3.628*pi*sinh.(asin.(-1.2087*(pol[19,1] .*Lscale))/3) .*0
-#     chem_p_mu= -3.628*pi*sinh.(asin.(-1.2087*(pol[20,1] .*Lscale))/3) .*0
-
-#     v[:,:] = repeat(vacuum_potential(x,T),2)
-
-#     G2T5 = GGG*(T^5)
-
-#     f_veL,f_ve_L = forward_v4e(T,Nu_e_norm,aNu_e_norm,L_e)
-#     f_vmuL,f_vmu_L = forward_v(T,Nu_mu_norm,aNu_mu_norm,L_mu)
-
-#     cross_real, cross_imag = (1.49851*(10^-6)*(T^3)).*[pol[3,:] .- pol[11,:], pol[4,:] .- pol[12,:]] 
-
-#     # println(typeof(v))
-#     v[1,:]= v[1,:] .+ cross_real
-#     v[2,:]= v[2,:] .- cross_imag
-#     v[3,:]= v[3,:] .+ (f_veL .- f_vmuL)/2
-#     v[8,:]= v[8,:] .+ (f_veL .+ f_vmuL)/twoxsqrt3
-
-#     v[9,:] = v[9,:] .- cross_real
-#     v[10,:]= v[10,:] .+ cross_imag
-#     v[11,:]= v[11,:] .+ (f_ve_L .- f_vmu_L)/2
-#     v[16,:]= v[16,:] .+ (f_ve_L .+ f_vmu_L)/twoxsqrt3
-
-#     # println(v)
-#     # open("file.txt","a") do io
-#     #     println(io,"a=",v[3,:])
-#     #     println(io,"b=",v[8,:])
-#     # end
-#     dpol_dt[3:18,:] = GMcross(2*v,pol)
-
-#     R_e = G2T5.*(C_e.*(fermi(x,chem_p_e)./f0 .- Nu_e))
-#     R_mu = G2T5.*(C_mu.*(fermi(x,chem_p_mu)./f0 .- Nu_mu))
-#     aR_e = G2T5.*(C_e.*(fermi(x,-chem_p_e)./f0 .- aNu_e))
-#     aR_mu = G2T5.*(C_mu.*(fermi(x,-chem_p_mu)./f0 .- aNu_mu))  
-
-#     dpol_dt[19,:] .= 0#trapz(x,((dpol_dt[5,:].-dpol_dt[13,:]) .+ ((dpol_dt[10,:].-dpol_dt[18,:]).*sqrt3)) .*f0x2)/(16*zeta3*Lscale)
-#     dpol_dt[20,:] .= 0#trapz(x,((dpol_dt[13,:].-dpol_dt[5,:]) .+ ((dpol_dt[10,:].-dpol_dt[18,:]).*sqrt3)) .*f0x2)/(16*zeta3*Lscale)
-
-#     dpol_dt[1,:] = (2/3)*(R_e .+ R_mu)
-#     dpol_dt[5,:] += (R_e .- R_mu)
-#     dpol_dt[10,:] += dpol_dt[1,:]*root3by2
-
-#     dpol_dt[6:7,:] .= dpol_dt[6:7,:] .- (coeffs[1,:][:,[CartesianIndex()]] .*G2T5[[CartesianIndex()],:]) .* pol[6:7,:]
-#     dpol_dt[8:9,:] .= dpol_dt[8:9,:] .- (coeffs[2,:][:,[CartesianIndex()]] .*G2T5[[CartesianIndex()],:]) .* pol[8:9,:]
-#     dpol_dt[3:4,:] .= dpol_dt[3:4,:] .-(coeffs[3,:][:,[CartesianIndex()]] .*G2T5[[CartesianIndex()],:]) .* pol[3:4,:]
-#     dpol_dt[14:15,:] .= dpol_dt[14:15,:] .- (coeffs[4,:][:,[CartesianIndex()]] .*G2T5[[CartesianIndex()],:]) .* pol[14:15,:]
-#     dpol_dt[16:17,:] .= dpol_dt[16:17,:] .- (coeffs[5,:][:,[CartesianIndex()]] .*G2T5[[CartesianIndex()],:]) .* pol[16:17,:]
-#     dpol_dt[11:12,:] .= dpol_dt[11:12,:] .- (coeffs[6,:][:,[CartesianIndex()]] .*G2T5[[CartesianIndex()],:]) .* pol[11:12,:]
-
-#     dpol_dt[3:4,:] .= 0#dpol_dt[3:4,:] .- (C_dash[1,:][:,[CartesianIndex()]] .*G2T5[[CartesianIndex()],:]) .* pol[11:12,:]
-#     dpol_dt[11:12,:] .= 0#dpol_dt[11:12,:] .- (C_dash[2,:][:,[CartesianIndex()]] .*G2T5[[CartesianIndex()],:]) .* pol[3:4,:]
-#     #k = [dpol_dt[6:7,:],dpol_dt[8:9,:],dpol_dt[3:4,:],dpol_dt[14:15,:],dpol_dt[16:17,:],dpol_dt[11:12,:]]
-
-#     #dpol_dt[6:7,:],dpol_dt[8:9,:],dpol_dt[3:4,:],dpol_dt[14:15,:],dpol_dt[16:17,:],dpol_dt[11:12,:] = k .- (coeffs[:,[CartesianIndex()]] .*G2T5[[CartesianIndex()],:])[:,[CartesianIndex()],:].* permutedims(cat(pol[6:7,:],pol[8:9,:],pol[3:4,:],pol[14:15,:],pol[16:17,:],pol[11:12,:],dims=3),(3,1,2))
-#     #dpol_dt[3:4,:],dpol_dt[11:12,:] = (dpol_dt[3:4,:],dpol_dt[11:12,:]) .- (C_dash[:,[CartesianIndex()]] .* G2T5[[CartesianIndex()],:])[:,[CartesianIndex()],:].* permutedims(cat(pol[11:12,:],pol[3:4,:],dims=3),(3,1,2))
-
-#     dpol_dt[2,:] = (2/3)*(aR_e .+ aR_mu)
-#     dpol_dt[13,:] += (aR_e .- aR_mu)
-#     dpol_dt[18,:] += dpol_dt[2,:]*root3by2
-#     #dpol_dt[:,2:4],dpol_dt[:,10:12] = np.array([dpol_dt[:,2:4],dpol_dt[:,10:12]])/1e-16
-
-#     dpol_dt = dpol_dt ./(-Hubble(T)*(T*10^6))
-#     return dpol_dt
-# # end
-for i=1:lenx
-    # plt.semilogy(sol.t,abs.(0.5*(pol[1,i,:] .+ pol[5,i,:] .+ (pol[10,i,:]/sqrt(3))) - 0.5*(pol[2,i,:] .+ pol[13,i,:] .+ (pol[18,i,:]/sqrt(3)))))
-    # plt.semilogy(sol.t,abs.(0.5*(pol[1,i,:] .- pol[5,i,:] .+ (pol[10,i,:]/sqrt(3))) - 0.5*(pol[2,i,:] .- pol[13,i,:] .+ (pol[18,i,:]/sqrt(3)))))
-    plt.semilogy(T,abs.(sol[19,i,:])*1e-10)
-    plt.semilogy(T,abs.(sol[20,i,:])*1e-10)
-end
-# plt.yscale("symlog",linthreshy=1e-15)
-plt.xlim(60e6,1e6)
-display(gcf())
+# for i=1:lenx
+#     # plt.semilogy(sol.t,abs.(0.5*(pol[1,i,:] .+ pol[5,i,:] .+ (pol[10,i,:]/sqrt(3))) - 0.5*(pol[2,i,:] .+ pol[13,i,:] .+ (pol[18,i,:]/sqrt(3)))))
+#     # plt.semilogy(sol.t,abs.(0.5*(pol[1,i,:] .- pol[5,i,:] .+ (pol[10,i,:]/sqrt(3))) - 0.5*(pol[2,i,:] .- pol[13,i,:] .+ (pol[18,i,:]/sqrt(3)))))
+#     plt.semilogy(T,abs.(sol[19,i,:])*1e-10)
+#     plt.semilogy(T,abs.(sol[20,i,:])*1e-10)
+# end
+# # plt.yscale("symlog",linthreshy=1e-15)
+# plt.xlim(60e6,1e6)
+# display(gcf())
 # plt.close()
 # println("size:",size(sol.t))

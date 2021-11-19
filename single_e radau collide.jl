@@ -24,11 +24,11 @@ delmass = np.array([0.1,1,2,4])
 theta_all = np.array(asin.(sqrt.([3*10^-3,3*10^-2]))/2)
 
 theta12 = deg2rad(33.45)
-name="November3_TRBDF"
+name="November17_TRBDF"
 delta_sqm12 =  7.6*(10^(-5))
-delta_sqm23 = delmass[4]
+delta_sqm23 = delmass[1]
 theta13 = theta_all[1]#deg2rad(0.642)
-theta23 = theta_all[2]#deg2rad(0.5)#theta_all[1] 
+theta23 = theta_all[1]#deg2rad(0.5)#theta_all[1] 
 del_cp = 0#np.radians(234)
 # x = np.linspace(0.1,20,30)
 Gf= 1.16*(10^(-23))
@@ -136,14 +136,14 @@ function GMcross(dpol_dt,pot_all,pol)
     dpol_dt[9,:] = -0.5*pol[2+1,:].*pot_all[5-1,:] +0.5*pol[5+1,:].*pot_all[2-1,:] +0.5*pol[6+1,:].*pot_all[3-1,:] -0.5*(-pol[4+1,:] .+sq3*pol[9+1,:]).*pot_all[7-1,:] +0.5*(-pot_all[4-1,:] .+ sq3*pot_all[9-1,:]).*pol[7+1,:]
     dpol_dt[10,:] = sq3*0.5*(pol[6+1,:] .* pot_all[5-1,:] .+ (pol[8+1,:] .* pot_all[7-1,:]))
     
-    dpol_dt[3+8,:] = -pol[3+9,:].*pot_all[4+7,:] + pol[4+9,:].*pot_all[3+7,:] + 0.5*pol[6+9,:].*pot_all[7+7,:] +0.5*pol[8+9,:].*pot_all[5+7,:]
-    dpol_dt[4+8,:] = pol[2+9,:].*pot_all[4+7,:] - pol[4+9,:].*pot_all[2+7,:] - 0.5*pol[5+9,:].*pot_all[7+7,:] +0.5*pol[7+9,:].*pot_all[5+7,:]
-    dpol_dt[5+8,:] = -pol[2+9,:].*pot_all[3+7,:] + pol[3+9,:].*pot_all[2+7,:] +0.5*pol[6+9,:].*pot_all[5+7,:] -0.5*pol[8+9,:].*pot_all[7+7,:]
-    dpol_dt[6+8,:] = 0.5*pol[3+9,:].*pot_all[7+7,:] -0.5*pol[7+9,:].*pot_all[3+7,:] -0.5*pol[8+9,:].*pot_all[2+7,:] -0.5*(pot_all[4+7,:] +sq3*pot_all[9+7,:]).*pol[6+9,:]
-    dpol_dt[7+8,:] = -0.5*pol[2+9,:].*pot_all[7+7,:] +0.5*pol[7+9,:].*pot_all[2+7,:] -0.5*pol[8+9,:].*pot_all[3+7,:] -0.5*(pol[4+9,:] +sq3*pol[9+9,:]).*pot_all[5+7,:] +0.5*(pot_all[4+7,:] +sq3*pot_all[9+7,:]).*pol[5+9,:]
-    dpol_dt[8+8,:] = -0.5*pol[3+9,:].*pot_all[5+7,:] +0.5*pol[5+9,:].*pot_all[3+7,:] -0.5*pol[6+9,:].*pot_all[2+7,:] -0.5*(-pot_all[4+7,:] +sq3*pot_all[9+7,:]).*pol[8+9,:]
-    dpol_dt[9+8,:] = -0.5*pol[2+9,:].*pot_all[5+7,:] +0.5*pol[5+9,:].*pot_all[2+7,:] +0.5*pol[6+9,:].*pot_all[3+7,:] -0.5*(-pol[4+9,:] +sq3*pol[9+9,:]).*pot_all[7+7,:] +0.5*(-pot_all[4+7,:] +sq3*pot_all[9+7,:]).*pol[7+9,:]
-    dpol_dt[10+8,:] = (sq3*0.5*pol[6+9,:].*pot_all[5+7,:]) .+ (sq3*0.5*pol[8+9,:].*pot_all[7+7,:])
+    dpol_dt[3+8,:] = -(-pol[3+9,:].*pot_all[4+7,:] + pol[4+9,:].*pot_all[3+7,:] + 0.5*pol[6+9,:].*pot_all[7+7,:] +0.5*pol[8+9,:].*pot_all[5+7,:])
+    dpol_dt[4+8,:] = -(pol[2+9,:].*pot_all[4+7,:] - pol[4+9,:].*pot_all[2+7,:] - 0.5*pol[5+9,:].*pot_all[7+7,:] +0.5*pol[7+9,:].*pot_all[5+7,:])
+    dpol_dt[5+8,:] = -(-pol[2+9,:].*pot_all[3+7,:] + pol[3+9,:].*pot_all[2+7,:] +0.5*pol[6+9,:].*pot_all[5+7,:] -0.5*pol[8+9,:].*pot_all[7+7,:])
+    dpol_dt[6+8,:] = -(0.5*pol[3+9,:].*pot_all[7+7,:] -0.5*pol[7+9,:].*pot_all[3+7,:] -0.5*pol[8+9,:].*pot_all[2+7,:] -0.5*(pot_all[4+7,:] +sq3*pot_all[9+7,:]).*pol[6+9,:])
+    dpol_dt[7+8,:] = -(-0.5*pol[2+9,:].*pot_all[7+7,:] +0.5*pol[7+9,:].*pot_all[2+7,:] -0.5*pol[8+9,:].*pot_all[3+7,:] -0.5*(pol[4+9,:] +sq3*pol[9+9,:]).*pot_all[5+7,:] +0.5*(pot_all[4+7,:] +sq3*pot_all[9+7,:]).*pol[5+9,:])
+    dpol_dt[8+8,:] = -(-0.5*pol[3+9,:].*pot_all[5+7,:] +0.5*pol[5+9,:].*pot_all[3+7,:] -0.5*pol[6+9,:].*pot_all[2+7,:] -0.5*(-pot_all[4+7,:] +sq3*pot_all[9+7,:]).*pol[8+9,:])
+    dpol_dt[9+8,:] = -(-0.5*pol[2+9,:].*pot_all[5+7,:] +0.5*pol[5+9,:].*pot_all[2+7,:] +0.5*pol[6+9,:].*pot_all[3+7,:] -0.5*(-pol[4+9,:] +sq3*pol[9+9,:]).*pot_all[7+7,:] +0.5*(-pot_all[4+7,:] +sq3*pot_all[9+7,:]).*pol[7+9,:])
+    dpol_dt[10+8,:] = -((sq3*0.5*pol[6+9,:].*pot_all[5+7,:]) .+ (sq3*0.5*pol[8+9,:].*pot_all[7+7,:]))
     # return dpol_dt[3:18,:]
 end
 
@@ -176,9 +176,6 @@ L_0 = 1e-10
 
 function equation!(dpol_dt,pol::Matrix{Z},v,T) where {Z <: Number}
     T= (T/10^6)
-    # pol = Vector{Z}(20,lenx) 
-    # cross1 = Vector{Z}(1,lenx)
-    # pol = reshape(pol_in,20,lenx)
 
     Nu_e= 0.5*(pol[1,:] .+ pol[5,:] .+ (pol[10,:]/sqrt3))
     Nu_mu= 0.5*(pol[1,:] .- pol[5,:] .+ (pol[10,:]/sqrt3))
@@ -210,7 +207,7 @@ function equation!(dpol_dt,pol::Matrix{Z},v,T) where {Z <: Number}
     v[8,:]= v[8,:] .+ (f_veL + f_vmuL)/twoxsqrt3
 
     v[9,:] = v[9,:] .- cross_real
-    v[10,:]= v[10,:] .+ cross_imag
+    v[10,:]= -(v[10,:] .+ cross_imag)
     v[11,:]= v[11,:] .+ (f_ve_L - f_vmu_L)/2
     v[16,:]= v[16,:] .+ (f_ve_L + f_vmu_L)/twoxsqrt3
 
@@ -257,7 +254,7 @@ pol_ini =  repeat([4/3,2*(2-(Asym_mu+Asym_e))/3,0,0,0,0,0,0,0,(2/sqrt(3)),0,0,As
 # pol_ini =  repeat([4/3,4/3,0,0,0,0,0,0,0,(2/sqrt(3)),0,0,0,0,0,0,0,(2/sqrt(3)),Asym_e/Lscale,Asym_mu/Lscale],1,lenx)
 # pol_ini =  repeat([0,0,0,0,0,0,0,0,0,0,0,0,Asym_mu-Asym_e,0,0,0,0,0,Asym_e/Lscale,Asym_mu/Lscale],1,lenx)
 # pol_ini = convert(Matrix{Float16},pol_ini)
-tspan = (60e6,1e6)
+tspan = (60e6,0.1e6)
 
 prob = ODEProblem(equation!,pol_ini,tspan,v)
 # using Sundials
@@ -282,28 +279,26 @@ println("done")
 
 #plot(sol)
 for i=1:lenx
-    # plt.plot(sol.t,0.5*(sol[1,i,:]+ sol[5,i,:] + (sol[10,i,:]/sqrt(3))))
-    # plt.plot(sol.t,0.5*(sol[1,i,:] .+ sol[5,i,:] .+ (sol[10,i,:]/sqrt(3))))
-    # plt.plot(sol.t,0.5*(sol[1,i,:] .- sol[5,i,:] .+ (sol[10,i,:]/sqrt(3))))
-    # plt.plot(sol.t,0.5*(sol[2,i,:] .+ sol[13,i,:] .+ (sol[18,i,:]/sqrt(3))))
-    # plt.plot(sol.t,0.5*(sol[1,i,:]- sol[5,i,:] + (sol[10,i,:]/sqrt(3))))
-    # plt.plot(sol.t,0.5*(sol[2,i,:] .- sol[13,i,:] .+ (sol[18,i,:]/sqrt(3))))
-    plt.plot(sol.t,0.5*(sol[1,i,:]- (2*sol[10,i,:]/sqrt(3))))
-    plt.plot(sol.t,0.5*(sol[2,i,:]- (2*sol[18,i,:]/sqrt(3))))
+    # plt.semilogx(sol.t,0.5*(sol[1,i,:] .+ sol[5,i,:] .+ (sol[10,i,:]/sqrt(3))))
+    # plt.semilogx(sol.t,0.5*(sol[1,i,:] .- sol[5,i,:] .+ (sol[10,i,:]/sqrt(3))))
+    # plt.semilogx(sol.t,0.5*(sol[2,i,:] .+ sol[13,i,:] .+ (sol[18,i,:]/sqrt(3))))
+    # plt.semilogx(sol.t,0.5*(sol[2,i,:] .- sol[13,i,:] .+ (sol[18,i,:]/sqrt(3))))
+    plt.semilogx(sol.t,0.5*(sol[1,i,:] .- (2*sol[10,i,:]/sqrt(3))))
+    plt.semilogx(sol.t,0.5*(sol[2,i,:] .- (2*sol[18,i,:]/sqrt(3))))
 end
 plt.xlim(tspan[1],tspan[end])
 display(gcf())
 plt.close()
-for i=1:lenx
-    # plt.semilogy(sol.t,abs.(0.5*(pol[1,i,:] .+ pol[5,i,:] .+ (pol[10,i,:]/sqrt(3))) - 0.5*(pol[2,i,:] .+ pol[13,i,:] .+ (pol[18,i,:]/sqrt(3)))))
-    # plt.semilogy(sol.t,abs.(0.5*(pol[1,i,:] .- pol[5,i,:] .+ (pol[10,i,:]/sqrt(3))) - 0.5*(pol[2,i,:] .- pol[13,i,:] .+ (pol[18,i,:]/sqrt(3)))))
-    plt.semilogy(sol.t,abs.(sol[19,i,:])*1e-10)
-    plt.semilogy(sol.t,abs.(sol[20,i,:])*1e-10)
-end
-plt.xlim(tspan[1],tspan[end])
-display(gcf())
-plt.close()
-println("size:",size(sol.t))
+# for i=1:lenx
+#     # plt.semilogy(sol.t,abs.(0.5*(pol[1,i,:] .+ pol[5,i,:] .+ (pol[10,i,:]/sqrt(3))) - 0.5*(pol[2,i,:] .+ pol[13,i,:] .+ (pol[18,i,:]/sqrt(3)))))
+#     # plt.semilogy(sol.t,abs.(0.5*(pol[1,i,:] .- pol[5,i,:] .+ (pol[10,i,:]/sqrt(3))) - 0.5*(pol[2,i,:] .- pol[13,i,:] .+ (pol[18,i,:]/sqrt(3)))))
+#     plt.semilogy(sol.t,abs.(sol[19,i,:])*1e-10)
+#     plt.semilogy(sol.t,abs.(sol[20,i,:])*1e-10)
+# end
+# plt.xlim(tspan[1],tspan[end])
+# display(gcf())
+# plt.close()
+# println("size:",size(sol.t))
 #plt.plot(sol.t,0.5*(sol[1,:]+ sol[5,:] + (sol[10,:]/sqrt(3))))
 
 #pol = np.swapaxes(pol,0,1)
@@ -317,8 +312,8 @@ n_eff_m = (1.5 * sol[1,1,:]) .- 2
 n_eff_a = (1.5 * sol[2,1,:]) .- 2
 
 fig1,ax1 =plt.subplots(figsize=(10,7))
-ax1.semilogy(sol.t/10^6,abs.(sol[19,1,:]*1e-10), label="L_e")
-ax1.semilogy(sol.t/10^6,abs.(sol[20,1,:]*1e-10), label="L_mu")
+ax1.loglog(sol.t/10^6,abs.(sol[19,1,:]*1e-10), label="L_e")
+ax1.loglog(sol.t/10^6,abs.(sol[20,1,:]*1e-10), label="L_mu")
 #ax1.set_title('3 Flavors with delta_CP = 0',fontsize=20,bbox=dict(facecolor='white', alpha=1))
 ax1.set_ylabel("Lepton Asymmetries",fontsize=20)
 ax1.set_xlabel("Temperature MeV", fontsize=20)
@@ -332,7 +327,7 @@ ax1.set_xlim(sol.t[1]/10^6,sol.t[end]/10^6)
 ax1.legend(shadow=true,fontsize=20)
 #fig1.savefig("2.png")
 ax12 = fig1.add_axes((0.125,-0.175,0.775,0.3),sharex=ax1)
-ax12.plot(sol.t/10^6,(n_eff_m .+ n_eff_a)/2,label="N_eff")
+ax12.semilogx(sol.t/10^6,(n_eff_m .+ n_eff_a)/2,label="N_eff")
 ax12.tick_params(axis="x",labelsize=15)
 ax12.tick_params(axis="y",labelsize=15)
 ax12.set_xlabel("Temperature (MeV)", fontsize=20)
